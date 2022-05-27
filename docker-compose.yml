@@ -1,11 +1,36 @@
 version: "3.7"
+
+networks:
+  dt-net:
+
 services:
-  timescale:
+  timescaledb:
     image: timescale/timescaledb-postgis:latest-pg12
-    container_name: timescale
-    volumes:
-      - "./timescale/data:/var/lib/postgresql/data"
-    ports:
-      - "5432:5432"
+    restart: unless-stopped
     environment:
-      POSTGRES_PASSWORD: admin123
+      POSTGRES_USER: admin
+      POSTGRES_PASSWORD: admin
+    volumes:
+      - ./timescaledb/data:/var/lib/postgresql/data
+    networks:
+      - dt-net
+    ports:
+      - 54321:5432
+    
+  pgadmin:
+    image: dpage/pgadmin4:6.8
+    container_name: pgadmin
+    restart: unless-stopped
+    volumes:
+      - ./pgadmin/gunicorn_config.py:/pgadmin4/gunicorn_config.py
+    networks:
+      - dt-net
+    environment:
+      - PGADMIN_DEFAULT_EMAIL=admin@cemit.com
+      - PGADMIN_DEFAULT_PASSWORD=admin
+      - PGADMIN_CONFIG_ENHANCED_COOKIE_PROTECTION=True
+      - PGADMIN_CONFIG_LOGIN_BANNER="Authorised users only!"
+      - PGADMIN_CONFIG_CONSOLE_LOG_LEVEL=10
+    ports:
+      - 54322:80
+    
